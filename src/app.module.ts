@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RedisModule } from './redis/redis.module.js';
 import { LinksModule } from './links/links.module.js';
 
 @Module({
@@ -17,6 +18,7 @@ import { LinksModule } from './links/links.module.js';
         migrationsRun: true,
       }),
     }),
+    RedisModule,
     LinksModule,
   ],
 })
