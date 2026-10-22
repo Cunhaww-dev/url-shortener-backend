@@ -2,11 +2,11 @@
 
 API para encurtar links e acompanhar cliques, feita com NestJS, PostgreSQL e Redis.
 
-> 🚧 **Em desenvolvimento.** O núcleo (criar link, redirecionar e contar cliques) já funciona. Veja o [roadmap](#roadmap) para o que vem a seguir.
+> 🚧 **Em desenvolvimento.** A API está completa e testada; faltam Docker da API, CI e deploy. Veja o [roadmap](#roadmap) para o que vem a seguir.
 
 ## Stack
 
-NestJS 12 · TypeScript · PostgreSQL 18 + TypeORM (migrations) · Redis (ioredis) · `@nestjs/schedule` · Docker Compose
+NestJS 12 · TypeScript · PostgreSQL 18 + TypeORM (migrations) · Redis (ioredis) · `@nestjs/schedule` · Swagger · Terminus (health check) · Throttler (rate limit) · Vitest + Supertest · Docker Compose
 
 ## Endpoints
 
@@ -15,6 +15,10 @@ NestJS 12 · TypeScript · PostgreSQL 18 + TypeORM (migrations) · Redis (ioredi
 | POST | `/links` | Recebe `{ "url": "https://..." }` e devolve um código curto |
 | GET | `/:code` | Redireciona (302) para o link original e conta o clique |
 | GET | `/links/:code/stats` | Total de cliques e data de criação |
+| GET | `/health` | Status da API, do banco e do Redis (200 ou 503) |
+| GET | `/docs` | Documentação interativa (Swagger) |
+
+> No Swagger, o `GET /{code}` mostra "Failed to fetch": o navegador segue o redirect para outro domínio e o CORS bloqueia a leitura. A rota funciona, teste com `curl -i` ou abrindo o link numa aba.
 
 ### Exemplo
 
@@ -53,6 +57,17 @@ A porta vem da variável `PORT` do `.env` (padrão `3000`). O `BASE_URL` precisa
 | `PORT` | Porta em que a API escuta |
 | `BASE_URL` | Endereço público usado para montar o link curto |
 
+## Testes
+
+```bash
+npm test           # unitários, com banco e Redis trocados por mocks
+npm run test:e2e   # ponta a ponta, com Postgres e Redis de verdade (precisa do docker compose up)
+npm run lint
+```
+
+- **Unitários (`src/**/*.spec.ts`):** `LinksService` (criação, nova tentativa em código repetido, cache, 404 e soma do stats) e `ClicksSyncService` (move os cliques do Redis para o banco).
+- **E2E (`test/links.e2e-spec.ts`):** cria, redireciona e conta o clique; recusa URL inválida; 404 para código inexistente; health check.
+
 ## Como funciona
 
 ```
@@ -74,6 +89,9 @@ a cada minuto: ClicksSyncService ──► SCAN clicks:* ──► GETDEL ──
 - **Código com `randomBytes` em base64url:** 7 caracteres seguros para URL, sem biblioteca extra. Se o código já existir (erro `23505` do Postgres), gera outro e tenta de novo, até 3 vezes.
 - **Validação com DTO:** o `ValidationPipe` + `class-validator` rejeitam com 400 qualquer `url` que não seja um link válido com `http://` ou `https://`.
 - **Migrations em vez de `synchronize`:** cada mudança no banco é um arquivo versionado no Git, e a API aplica as pendentes ao subir.
+- **Rate limit só na criação:** 10 links por minuto por IP (`ThrottlerGuard` só no `POST /links`), para evitar abuso. O redirect não tem limite, porque quem clica não é suspeito.
+- **Health check com 503:** se o banco ou o Redis cair, o `/health` responde 503 (serviço indisponível) e mostra qual dependência falhou, para o Docker e o monitoramento perceberem.
+- **Testes em duas camadas:** os unitários rodam em milissegundos, sem Docker, e testam a regra de negócio isolada. Os e2e sobem a API inteira e garantem que as peças funcionam juntas.
 - **Portas só em `127.0.0.1`:** Postgres e Redis não ficam acessíveis por outros aparelhos da rede.
 
 ## Roadmap
@@ -82,10 +100,10 @@ a cada minuto: ClicksSyncService ──► SCAN clicks:* ──► GETDEL ──
 - [x] Tabela `link` com migrations (TypeORM)
 - [x] Endpoints de criar, redirecionar e estatísticas, com cache no Redis
 - [x] Contador de cliques no Redis com sincronização agendada
-- [ ] Swagger em `/docs`
-- [ ] Health check em `/health` (API, banco e Redis)
-- [ ] Rate limit na criação de links (10 por minuto por IP)
-- [ ] Testes unitários (Vitest) e ponta a ponta (Supertest)
+- [x] Swagger em `/docs`
+- [x] Health check em `/health` (API, banco e Redis)
+- [x] Rate limit na criação de links (10 por minuto por IP)
+- [x] Testes unitários (Vitest) e ponta a ponta (Supertest)
 - [ ] Dockerfile multi-stage e CI no GitHub Actions
 - [ ] Deploy em VPS com Nginx e HTTPS
 
