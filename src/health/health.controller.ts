@@ -8,7 +8,6 @@ import {
 } from '@nestjs/terminus';
 import { Redis } from 'ioredis';
 import { REDIS } from '../redis/redis.module.js';
-import { runInThisContext } from 'vm';
 
 @ApiTags('Health')
 @Controller('health')
