@@ -41,7 +41,7 @@ export class LinksService {
 
     if (!cached)
       await this.redis.set(`link:${code}`, url, 'EX', CACHE_TTL_SECONDS);
-    await this.repo.increment({ code }, 'clicks', 1);
+    await this.redis.incr(`clicks:${code}`);
     return url;
   }
 
@@ -49,10 +49,11 @@ export class LinksService {
     const link = await this.repo.findOneBy({ code });
     if (!link) throw new NotFoundException('Link não encontrado');
 
+    const pendentes = Number(await this.redis.get(`clicks:${code}`)) || 0;
     return {
       code: link.code,
       url: link.url,
-      clicks: link.clicks,
+      clicks: link.clicks + pendentes,
       createdAt: link.createdAt,
     };
   }

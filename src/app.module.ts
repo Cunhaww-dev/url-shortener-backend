@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from './redis/redis.module.js';
 import { LinksModule } from './links/links.module.js';
@@ -18,6 +19,7 @@ import { LinksModule } from './links/links.module.js';
         migrationsRun: true,
       }),
     }),
+    ScheduleModule.forRoot(),
     RedisModule,
     LinksModule,
   ],
