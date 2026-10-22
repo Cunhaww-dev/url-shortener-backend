@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RedisModule } from './redis/redis.module.js';
+import { HealthModule } from './health/health.module.js';
 import { LinksModule } from './links/links.module.js';
+import { RedisModule } from './redis/redis.module.js';
 
 @Module({
   imports: [
@@ -20,7 +22,9 @@ import { LinksModule } from './links/links.module.js';
       }),
     }),
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 10 }]),
     RedisModule,
+    HealthModule,
     LinksModule,
   ],
 })
