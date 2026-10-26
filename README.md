@@ -1,5 +1,7 @@
 # Encurtador de Links API
 
+![CI](https://github.com/Cunhaww-dev/url-shortener-backend/actions/workflows/ci.yml/badge.svg)
+
 API para encurtar links e acompanhar cliques, feita com NestJS, PostgreSQL e Redis.
 
 > 🚧 **Em desenvolvimento.** A API está completa e testada; faltam Docker da API, CI e deploy. Veja o [roadmap](#roadmap) para o que vem a seguir.
@@ -10,13 +12,13 @@ NestJS 12 · TypeScript · PostgreSQL 18 + TypeORM (migrations) · Redis (ioredi
 
 ## Endpoints
 
-| Método | Rota | O que faz |
-| --- | --- | --- |
-| POST | `/links` | Recebe `{ "url": "https://..." }` e devolve um código curto |
-| GET | `/:code` | Redireciona (302) para o link original e conta o clique |
-| GET | `/links/:code/stats` | Total de cliques e data de criação |
-| GET | `/health` | Status da API, do banco e do Redis (200 ou 503) |
-| GET | `/docs` | Documentação interativa (Swagger) |
+| Método | Rota                 | O que faz                                                   |
+| ------ | -------------------- | ----------------------------------------------------------- |
+| POST   | `/links`             | Recebe `{ "url": "https://..." }` e devolve um código curto |
+| GET    | `/:code`             | Redireciona (302) para o link original e conta o clique     |
+| GET    | `/links/:code/stats` | Total de cliques e data de criação                          |
+| GET    | `/health`            | Status da API, do banco e do Redis (200 ou 503)             |
+| GET    | `/docs`              | Documentação interativa (Swagger)                           |
 
 > No Swagger, o `GET /{code}` mostra "Failed to fetch": o navegador segue o redirect para outro domínio e o CORS bloqueia a leitura. A rota funciona, teste com `curl -i` ou abrindo o link numa aba.
 
@@ -49,13 +51,13 @@ A porta vem da variável `PORT` do `.env` (padrão `3000`). O `BASE_URL` precisa
 
 ### Variáveis de ambiente
 
-| Variável | Para quê |
-| --- | --- |
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | Credenciais usadas pelo container do Postgres |
-| `DATABASE_URL` | Conexão da API com o Postgres |
-| `REDIS_URL` | Conexão da API com o Redis |
-| `PORT` | Porta em que a API escuta |
-| `BASE_URL` | Endereço público usado para montar o link curto |
+| Variável                                              | Para quê                                        |
+| ----------------------------------------------------- | ----------------------------------------------- |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | Credenciais usadas pelo container do Postgres   |
+| `DATABASE_URL`                                        | Conexão da API com o Postgres                   |
+| `REDIS_URL`                                           | Conexão da API com o Redis                      |
+| `PORT`                                                | Porta em que a API escuta                       |
+| `BASE_URL`                                            | Endereço público usado para montar o link curto |
 
 ## Testes
 
